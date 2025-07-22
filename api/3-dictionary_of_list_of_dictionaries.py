@@ -11,7 +11,6 @@ if __name__ == "__main__":
     """
         export to JSON
     """
-
     with open("todo_all_employees.json", "w") as jsonfile:
         json.dump({
             u.get("id"): [{
@@ -21,4 +20,3 @@ if __name__ == "__main__":
             } for t in requests.get(url + "todos",
                                     params={"userId": u.get("id")}).json()]
             for u in users}, jsonfile)
-        
