@@ -1,57 +1,27 @@
 #!/usr/bin/python3
-"""
-Exports employee TODO list progress to JSON format.
-"""
+""""Module"""
+
 import json
 import requests
 import sys
 
+if __name__ == '__main__':
+    employee_id = sys.argv[1]
+    user_url = "https://jsonplaceholder.typicode.com/users/{}" \
+        .format(employee_id)
+    todos_url = "https://jsonplaceholder.typicode.com/users/{}/todos/" \
+        .format(employee_id)
 
-def export_to_json(employee_id):
-    """
-    Fetches employee TODO list progress and exports it to a JSON file.
-    """
-    base_url = "https://jsonplaceholder.typicode.com"
+    user_info = requests.request('GET', user_url).json()
+    todos_info = requests.request('GET', todos_url).json()
 
-    # Fetch user details
-    user_response = requests.get(f"{base_url}/users/{employee_id}")
-    user_data = user_response.json()
-    username = user_data.get("username")
+    employee_username = user_info["username"]
 
-    # Fetch TODO list for the user
-    todos_response = requests.get(f"{base_url}/todos",
-                                  params={"userId": employee_id})
-    todos_data = todos_response.json()
+    todos_info_sorted = [
+        dict(zip(["task", "completed", "username"],
+                 [task["title"], task["completed"], employee_username]))
+        for task in todos_info]
 
-    # Prepare data for JSON export
-    tasks_list = []
-    for task in todos_data:
-        tasks_list.append({
-            "task": task.get("title"),
-            "completed": task.get("completed"),
-            "username": username
-        })
-
-    json_output = {str(employee_id): tasks_list}
-
-    # Write to JSON file
-    json_filename = f"{employee_id}.json"
-    with open(json_filename, mode='w', encoding='utf-8') as file:
-        json.dump(json_output, file, indent=4)
-
-    print(f"Data exported to {json_filename}")
-
-
-if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        print("Usage: python3 2-export_to_JSON.py <employee_id>")
-        sys.exit(1)
-    try:
-        employee_id = int(sys.argv[1])
-        export_to_json(employee_id)
-    except ValueError:
-        print("Employee ID must be an integer.")
-        sys.exit(1)
-    except requests.exceptions.RequestException as e:
-        print(f"Error fetching data: {e}")
-        sys.exit(1)
+    user_dict = {str(employee_id): todos_info_sorted}
+    with open(str(employee_id) + '.json', "w") as file:
+        file.write(json.dumps(user_dict))
