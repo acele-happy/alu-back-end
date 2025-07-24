@@ -1,27 +1,26 @@
 #!/usr/bin/python3
-""""Module"""
+"""export Json"""
+
 
 import json
 import requests
 import sys
 
-if __name__ == '__main__':
-    employee_id = sys.argv[1]
-    user_url = "https://jsonplaceholder.typicode.com/users/{}" \
-        .format(employee_id)
-    todos_url = "https://jsonplaceholder.typicode.com/users/{}/todos/" \
-        .format(employee_id)
 
-    user_info = requests.request('GET', user_url).json()
-    todos_info = requests.request('GET', todos_url).json()
+if __name__ == "__main__":
+    employee_id = int(sys.argv[1])
+    employee_url = "https://jsonplaceholder\
+.typicode.com/users/{}".format(employee_id)
+    todo_url = "https://jsonplaceholder\
+.typicode.com/users/{}/todos".format(employee_id)
 
-    employee_username = user_info["username"]
+    employee = requests.get(employee_url).json()
+    employee_name = employee['name']
 
-    todos_info_sorted = [
-        dict(zip(["task", "completed", "username"],
-                 [task["title"], task["completed"], employee_username]))
-        for task in todos_info]
-
-    user_dict = {str(employee_id): todos_info_sorted}
-    with open(str(employee_id) + '.json', "w") as file:
-        file.write(json.dumps(user_dict))
+    todo_data = requests.get(todo_url).json()
+    data = [{"task": i["title"],
+             "completed": i["completed"],
+             "username": employee["username"]} for i in todo_data]
+    json_data = json.dumps({"{}".format(employee["id"]): data})
+    with open("{}.json".format(employee["id"]), 'w', encoding='utf-8') as f:
+        f.write(json_data)
